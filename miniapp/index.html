@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Настройки автоответчика</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🤖 Автоответчик</h1>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab active" data-tab="home">Главная</button>
+            <button class="tab" data-tab="mode">Режим</button>
+            <button class="tab" data-tab="rules">Правила</button>
+            <button class="tab" data-tab="ai">ИИ</button>
+        </nav>
+
+        <main class="content">
+            <!-- Главная -->
+            <section id="home" class="tab-content active">
+                <div class="setting-item">
+                    <label>Автоответчик</label>
+                    <label class="switch">
+                        <input type="checkbox" id="enabled" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <label>Уведомления</label>
+                    <label class="switch">
+                        <input type="checkbox" id="notifications" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item vertical">
+                    <label>Моё имя</label>
+                    <input type="text" id="owner_name" placeholder="Как к вам обращаться">
+                </div>
+
+                <div class="setting-item vertical">
+                    <label>URL Mini App</label>
+                    <input type="text" id="webapp_url" placeholder="https://username.github.io/repo/">
+                </div>
+
+                <button class="btn primary" onclick="saveSettings()">💾 Сохранить</button>
+            </section>
+
+            <!-- Режим ответа -->
+            <section id="mode" class="tab-content">
+                <div class="radio-group">
+                    <label class="radio-item">
+                        <input type="radio" name="reply_mode" value="all" checked>
+                        <span>Всем подряд</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="reply_mode" value="strangers">
+                        <span>Только незнакомцам</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="reply_mode" value="whitelist">
+                        <span>Белый список</span>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="reply_mode" value="blacklist">
+                        <span>Чёрный список</span>
+                    </label>
+                </div>
+
+                <div id="list-input" class="setting-item vertical" style="display: none;">
+                    <label>Список (через запятую)</label>
+                    <textarea id="user_list" placeholder="@username1, @username2, или ID"></textarea>
+                </div>
+
+                <button class="btn primary" onclick="saveSettings()">💾 Сохранить</button>
+            </section>
+
+            <!-- Правила -->
+            <section id="rules" class="tab-content">
+                <div id="rules-list" class="rules-list"></div>
+
+                <div class="add-rule-form">
+                    <h3>Добавить правило</h3>
+                    <input type="text" id="new_phrase" placeholder="Фраза (триггер)">
+                    <textarea id="new_answer" placeholder="Ответ бота"></textarea>
+                    <div class="match-type-selector">
+                        <label class="radio-item">
+                            <input type="radio" name="match_type" value="exact" checked>
+                            <span>Точное совпадение</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="match_type" value="partial">
+                            <span>Частичное совпадение</span>
+                        </label>
+                    </div>
+                    <button class="btn primary" onclick="addRule()">➕ Добавить</button>
+                </div>
+            </section>
+
+            <!-- Настройки ИИ -->
+            <section id="ai" class="tab-content">
+                <div class="setting-item vertical">
+                    <label>Промпт для ИИ</label>
+                    <textarea id="ai_prompt" rows="6" placeholder="Опишите, как должен отвечать бот..."></textarea>
+                </div>
+
+                <button class="btn secondary" onclick="testAI()">🧪 Тест ИИ</button>
+                <button class="btn primary" onclick="saveSettings()">💾 Сохранить</button>
+
+                <div id="ai-test-result" class="test-result" style="display: none;"></div>
+            </section>
+        </main>
+
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
