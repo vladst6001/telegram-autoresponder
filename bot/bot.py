@@ -71,9 +71,27 @@ async def main():
             active_connections[OWNER_ID] = connection.id
             logger.info(f"Business connected: {connection.id}")
 
+    @router.message(Command("test"))
+    async def cmd_test(message: Message):
+        if not is_owner(message.from_user.id):
+            return
+        current = db.get_setting("test_mode")
+        new_val = "false" if current == "true" else "true"
+        db.set_setting("test_mode", new_val)
+        status = "включён" if new_val == "true" else "выключен"
+        await message.answer(f"🧪 Режим тестирования {status}.\nТеперь напиши боту любое сообщение — он ответит.")
+
     @router.message(CommandStart())
     async def cmd_start(message: Message):
         if not is_owner(message.from_user.id):
+            enabled = db.get_setting("enabled")
+            if enabled == "true":
+                reply = await generate_reply("привет")
+                await message.reply(reply)
+                return
+            return
+        test_mode = db.get_setting("test_mode") == "true"
+        if test_mode:
             enabled = db.get_setting("enabled")
             if enabled == "true":
                 reply = await generate_reply("привет")
@@ -192,7 +210,9 @@ async def main():
     @router.message(F.private)
     async def handle_private_message(message: Message):
         if is_owner(message.from_user.id):
-            return
+            test_mode = db.get_setting("test_mode") == "true"
+            if not test_mode:
+                return
         enabled = db.get_setting("enabled")
         if enabled != "true":
             return
