@@ -6,9 +6,6 @@ let currentRules = [];
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     loadSettings();
-    document.getElementById('test_mode').addEventListener('change', function() {
-        document.getElementById('test_hint').style.display = this.checked ? 'block' : 'none';
-    });
 });
 
 function initTabs() {
@@ -31,13 +28,12 @@ function initTabs() {
 async function loadSettings() {
     currentSettings = {
         enabled: true, notifications: true, test_mode: false,
-        reply_mode: 'all', owner_name: '', webapp_url: '',
-        ai_prompt: '', whitelist_users: '', blacklist_users: ''
+        reply_mode: 'all', owner_name: '', webapp_url: '', whitelist_users: '', blacklist_users: ''
     };
     currentRules = [
         { id: 1, phrase: 'привет', answer: 'Здравствуйте! Рад познакомиться 😊', match_type: 'exact' },
         { id: 2, phrase: 'как дела', answer: 'У меня всё хорошо, спасибо! А у вас?', match_type: 'partial' },
-        { id: 3, phrase: 'ты кто', answer: 'Я — помощник OWNER_NAME. Отвечаю, когда он занят', match_type: 'exact' },
+        { id: 3, phrase: 'ты кто', answer: 'Я — помощник владельца. Отвечаю, когда он занят', match_type: 'exact' },
         { id: 4, phrase: 'когда он вернётся', answer: 'Точно не знаю, но я передам, что вы спрашивали', match_type: 'exact' },
         { id: 5, phrase: 'что ты умеешь', answer: 'Могу ответить на простые вопросы или передать сообщение', match_type: 'exact' },
         { id: 6, phrase: 'ты ии', answer: 'Да, меня настроили помогать с ответами', match_type: 'exact' },
@@ -51,7 +47,6 @@ function updateUI() {
     document.getElementById('enabled').checked = currentSettings.enabled;
     document.getElementById('notifications').checked = currentSettings.notifications;
     document.getElementById('test_mode').checked = currentSettings.test_mode;
-    document.getElementById('test_hint').style.display = currentSettings.test_mode ? 'block' : 'none';
     document.getElementById('owner_name').value = currentSettings.owner_name || '';
     document.getElementById('webapp_url').value = currentSettings.webapp_url || '';
     const modeInput = document.querySelector('input[name="reply_mode"][value="' + currentSettings.reply_mode + '"]');
@@ -59,7 +54,6 @@ function updateUI() {
     document.getElementById('user_list').value =
         currentSettings.reply_mode === 'whitelist' ? currentSettings.whitelist_users :
         currentSettings.reply_mode === 'blacklist' ? currentSettings.blacklist_users : '';
-    document.getElementById('ai_prompt').value = currentSettings.ai_prompt || '';
     renderRules();
 }
 
@@ -72,17 +66,54 @@ function renderRules() {
     ).join('');
 }
 
+function matchRuleLocal(text) {
+    var trimmed = text.trim().toLowerCase();
+    for (var i = 0; i < currentRules.length; i++) {
+        var r = currentRules[i];
+        var phrase = r.phrase.toLowerCase();
+        if (r.match_type === 'exact' && trimmed === phrase) return r.answer;
+    }
+    for (var i = 0; i < currentRules.length; i++) {
+        var r = currentRules[i];
+        var phrase = r.phrase.toLowerCase();
+        if (r.match_type === 'partial' && trimmed.indexOf(phrase) !== -1) return r.answer;
+    }
+    return null;
+}
+
+function sendTestMsg() {
+    var input = document.getElementById('chat-input');
+    var text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    var chat = document.getElementById('chat-messages');
+    chat.innerHTML += '<div class="chat-msg user">' + escapeHtml(text) + '</div>';
+    var reply = matchRuleLocal(text);
+    if (!reply) reply = 'Я передам владельцу, как только он появится';
+    setTimeout(function() {
+        chat.innerHTML += '<div class="chat-msg bot">' + escapeHtml(reply) + '</div>';
+        chat.scrollTop = chat.scrollHeight;
+    }, 300);
+    chat.scrollTop = chat.scrollHeight;
+    if (tg) tg.sendData(JSON.stringify({ action: 'test_chat', text: text }));
+}
+
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 function saveSettings() {
-    const mode = document.querySelector('input[name="reply_mode"]:checked').value;
-    const listValue = document.getElementById('user_list').value;
-    const settings = {
+    var mode = document.querySelector('input[name="reply_mode"]:checked').value;
+    var listValue = document.getElementById('user_list').value;
+    var settings = {
         enabled: document.getElementById('enabled').checked,
         notifications: document.getElementById('notifications').checked,
         test_mode: document.getElementById('test_mode').checked,
         owner_name: document.getElementById('owner_name').value,
         webapp_url: document.getElementById('webapp_url').value,
         reply_mode: mode,
-        ai_prompt: document.getElementById('ai_prompt').value,
         whitelist_users: mode === 'whitelist' ? listValue : currentSettings.whitelist_users,
         blacklist_users: mode === 'blacklist' ? listValue : currentSettings.blacklist_users
     };
@@ -92,9 +123,9 @@ function saveSettings() {
 }
 
 function addRule() {
-    const phrase = document.getElementById('new_phrase').value.trim();
-    const answer = document.getElementById('new_answer').value.trim();
-    const matchType = document.querySelector('input[name="match_type"]:checked').value;
+    var phrase = document.getElementById('new_phrase').value.trim();
+    var answer = document.getElementById('new_answer').value.trim();
+    var matchType = document.querySelector('input[name="match_type"]:checked').value;
     if (!phrase || !answer) { showToast('❌ Заполните фразу и ответ'); return; }
     if (tg) tg.sendData(JSON.stringify({ action: 'add_rule', phrase: phrase, answer: answer, match_type: matchType }));
     currentRules.push({ id: Math.max.apply(null, currentRules.map(function(r){return r.id})) + 1, phrase: phrase, answer: answer, match_type: matchType });
