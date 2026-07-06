@@ -93,6 +93,12 @@ async def main():
 
     @router.message(CommandStart())
     async def cmd_start(message: Message):
+        if not is_owner(message.from_user.id):
+            enabled = db.get_setting("enabled")
+            if enabled == "true":
+                reply = await generate_reply("привет")
+                await message.reply(reply)
+                return
         webapp_url = await get_webapp_url()
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="⚙️ Открыть настройки", web_app=WebAppInfo(url=webapp_url))]
