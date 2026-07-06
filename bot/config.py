@@ -4,9 +4,6 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 OWNER_ID = int(os.getenv("OWNER_ID", "0"))
 DB_PATH = os.getenv("DB_PATH", "database.db")
 
-AI_MODEL = "gpt-3.5-turbo"
-AI_TIMEOUT = 10
-
 DEFAULT_AI_PROMPT = (
     "Ты — вежливый помощник. Отвечай кратко, дружелюбно, но с лёгкой дистанцией. "
     "Если вопрос личный или ты не знаешь ответа — скажи: "
