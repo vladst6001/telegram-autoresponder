@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Настройки автоответчика</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 160px); }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .chat-msg { max-width: 80%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
+        .chat-msg.user { align-self: flex-end; background: var(--button-color); color: var(--button-text-color); border-bottom-right-radius: 4px; }
+        .chat-msg.bot { align-self: flex-start; background: var(--secondary-bg-color); color: var(--text-color); border-bottom-left-radius: 4px; }
+        .chat-input-row { display: flex; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--secondary-bg-color); }
+        .chat-input-row input { flex: 1; padding: 10px 14px; border: 1px solid var(--secondary-bg-color); border-radius: 20px; font-size: 14px; background: var(--bg-color); color: var(--text-color); }
+        .chat-input-row button { padding: 10px 16px; border: none; border-radius: 20px; background: var(--button-color); color: var(--button-text-color); font-size: 14px; font-weight: 600; cursor: pointer; }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -16,11 +26,10 @@
             <button class="tab active" data-tab="home">Главная</button>
             <button class="tab" data-tab="mode">Режим</button>
             <button class="tab" data-tab="rules">Правила</button>
-            <button class="tab" data-tab="ai">ИИ</button>
+            <button class="tab" data-tab="test">Тест</button>
         </nav>
 
         <main class="content">
-            <!-- Главная -->
             <section id="home" class="tab-content active">
                 <div class="setting-item">
                     <label>Автоответчик</label>
@@ -29,7 +38,6 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-
                 <div class="setting-item">
                     <label>Уведомления</label>
                     <label class="switch">
@@ -37,82 +45,62 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-
+                <div class="setting-item">
+                    <label>🧪 Тестирование</label>
+                    <label class="switch">
+                        <input type="checkbox" id="test_mode">
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 <div class="setting-item vertical">
                     <label>Моё имя</label>
                     <input type="text" id="owner_name" placeholder="Как к вам обращаться">
                 </div>
-
                 <div class="setting-item vertical">
                     <label>URL Mini App</label>
                     <input type="text" id="webapp_url" placeholder="https://username.github.io/repo/">
                 </div>
-
                 <button class="btn primary" onclick="saveSettings()">💾 Сохранить</button>
             </section>
 
-            <!-- Режим ответа -->
             <section id="mode" class="tab-content">
                 <div class="radio-group">
-                    <label class="radio-item">
-                        <input type="radio" name="reply_mode" value="all" checked>
-                        <span>Всем подряд</span>
-                    </label>
-                    <label class="radio-item">
-                        <input type="radio" name="reply_mode" value="strangers">
-                        <span>Только незнакомцам</span>
-                    </label>
-                    <label class="radio-item">
-                        <input type="radio" name="reply_mode" value="whitelist">
-                        <span>Белый список</span>
-                    </label>
-                    <label class="radio-item">
-                        <input type="radio" name="reply_mode" value="blacklist">
-                        <span>Чёрный список</span>
-                    </label>
+                    <label class="radio-item"><input type="radio" name="reply_mode" value="all" checked><span>Всем подряд</span></label>
+                    <label class="radio-item"><input type="radio" name="reply_mode" value="strangers"><span>Только незнакомцам</span></label>
+                    <label class="radio-item"><input type="radio" name="reply_mode" value="whitelist"><span>Белый список</span></label>
+                    <label class="radio-item"><input type="radio" name="reply_mode" value="blacklist"><span>Чёрный список</span></label>
                 </div>
-
                 <div id="list-input" class="setting-item vertical" style="display: none;">
                     <label>Список (через запятую)</label>
                     <textarea id="user_list" placeholder="@username1, @username2, или ID"></textarea>
                 </div>
-
                 <button class="btn primary" onclick="saveSettings()">💾 Сохранить</button>
             </section>
 
-            <!-- Правила -->
             <section id="rules" class="tab-content">
                 <div id="rules-list" class="rules-list"></div>
-
                 <div class="add-rule-form">
                     <h3>Добавить правило</h3>
                     <input type="text" id="new_phrase" placeholder="Фраза (триггер)">
                     <textarea id="new_answer" placeholder="Ответ бота"></textarea>
                     <div class="match-type-selector">
-                        <label class="radio-item">
-                            <input type="radio" name="match_type" value="exact" checked>
-                            <span>Точное совпадение</span>
-                        </label>
-                        <label class="radio-item">
-                            <input type="radio" name="match_type" value="partial">
-                            <span>Частичное совпадение</span>
-                        </label>
+                        <label class="radio-item"><input type="radio" name="match_type" value="exact" checked><span>Точное</span></label>
+                        <label class="radio-item"><input type="radio" name="match_type" value="partial"><span>Частичное</span></label>
                     </div>
                     <button class="btn primary" onclick="addRule()">➕ Добавить</button>
                 </div>
             </section>
 
-            <!-- Настройки ИИ -->
-            <section id="ai" class="tab-content">
-                <div class="setting-item vertical">
-                    <label>Промпт для ИИ</label>
-                    <textarea id="ai_prompt" rows="6" placeholder="Опишите, как должен отвечать бот..."></textarea>
+            <section id="test" class="tab-content">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-msg bot">Привет! Я автоответчик. Напишите мне что-нибудь для теста.</div>
+                    </div>
+                    <div class="chat-input-row">
+                        <input type="text" id="chat-input" placeholder="Напишите сообщение..." onkeydown="if(event.key==='Enter')sendTestMsg()">
+                        <button onclick="sendTestMsg()">→</button>
+                    </div>
                 </div>
-
-                <button class="btn secondary" onclick="testAI()">🧪 Тест ИИ</button>
-                <button class="btn primary" onclick="saveSettings()">💾 Сохранить</button>
-
-                <div id="ai-test-result" class="test-result" style="display: none;"></div>
             </section>
         </main>
 
