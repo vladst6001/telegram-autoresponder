@@ -52,17 +52,14 @@ async def send_ai_message(text: str) -> str:
         return f"Я передам {owner_name}, как только он появится"
 
 
-async def notify_owner(bot_instance: Bot, sender_name: str, sender_username: str, text: str, reply: str, is_stranger: bool):
-    icon = "🔴" if is_stranger else "🟢"
+async def notify_owner(bot_instance, sender_name, sender_username, text, reply, is_stranger):
+    icon = "\U0001f534" if is_stranger else "\U0001f7e2"
     username_part = f" (@{sender_username})" if sender_username else ""
     notification = (
-        f"{icon} {sender_name}{username_part} написал(а):
-"
-        f"\"{text}\"
-
-"
-        f"🤖 Мой ответ:
-\"{reply}\""
+        f"{icon} {sender_name}{username_part} написал(а):\n"
+        f'"{text}"\n\n'
+        f"🤖 Мой ответ:\n"
+        f'"{reply}"'
     )
     try:
         await bot_instance.send_message(OWNER_ID, notification)
@@ -101,14 +98,11 @@ async def main():
                 return
         webapp_url = await get_webapp_url()
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="⚙️ Открыть настройки", web_app=WebAppInfo(url=webapp_url))]
+            [InlineKeyboardButton(text="\u2699\ufe0f Открыть настройки", web_app=WebAppInfo(url=webapp_url))]
         ])
         await message.answer(
-            "👋 Привет! Я бот-автоответчик.
-
-"
-            "Я отвечаю на сообщения, когда вы не в сети.
-"
+            "👋 Привет! Я бот-автоответчик.\n\n"
+            "Я отвечаю на сообщения, когда вы не в сети.\n"
             "Настройте меня через Mini App:",
             reply_markup=kb,
         )
@@ -120,27 +114,22 @@ async def main():
             return
         webapp_url = await get_webapp_url()
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="⚙️ Открыть настройки", web_app=WebAppInfo(url=webapp_url))]
+            [InlineKeyboardButton(text="\u2699\ufe0f Открыть настройки", web_app=WebAppInfo(url=webapp_url))]
         ])
         await message.answer("Настройки автоответчика:", reply_markup=kb)
 
     @router.message(Command("help"))
     async def cmd_help(message: Message):
+        if not is_owner(message.from_user.id):
+            await message.answer("🤖 Я — помощник владельца. Чем могу помочь?")
+            return
         status = "✅ Подключён" if active_connections.get(OWNER_ID) else "❌ Не подключён"
         await message.answer(
-            "📖 Справка:
-
-"
-            "/start — Приветствие и кнопка настроек
-"
-            "/settings — Открыть Mini App
-"
-            "/help — Эта справка
-
-"
-            f"🤖 Автоответчик отвечает на сообщения по правилам или с помощью ИИ.
-
-"
+            "📖 Справка:\n\n"
+            "/start — Приветствие и кнопка настроек\n"
+            "/settings — Открыть Mini App\n"
+            "/help — Эта справка\n\n"
+            "🤖 Автоответчик отвечает на сообщения по правилам или с помощью ИИ.\n\n"
             f"📡 Business: {status}"
         )
 
@@ -175,7 +164,7 @@ async def main():
             match_type = data.get("match_type", "exact")
             if phrase and answer:
                 db.add_rule(phrase, answer, match_type)
-                await message.answer(f"✅ Правило добавлено: \"{phrase}\"")
+                await message.answer(f'✅ Правило добавлено: "{phrase}"')
             else:
                 await message.answer("❌ Заполните фразу и ответ")
         elif action == "delete_rule":
@@ -186,9 +175,7 @@ async def main():
         elif action == "test_ai":
             test_text = "Привет, как дела?"
             reply = await send_ai_message(test_text)
-            await message.answer(f"🧪 Тест ИИ:
-Вопрос: {test_text}
-Ответ: {reply}")
+            await message.answer(f"🧪 Тест ИИ:\nВопрос: {test_text}\nОтвет: {reply}")
 
     @router.message(F.business_connection)
     async def handle_business_message(message: Message):
