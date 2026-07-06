@@ -23,7 +23,7 @@ async def get_webapp_url() -> str:
     url = db.get_setting("webapp_url")
     if url:
         return url
-    return "https://yourusername.github.io/your-repo/"
+    return "https://vladst6001.github.io/telegram-autoresponder/"
 
 
 async def send_ai_message(text: str) -> str:
