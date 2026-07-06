@@ -10,9 +10,7 @@ from aiogram.types import (
     BusinessConnection
 )
 from aiogram.filters import CommandStart, Command
-from g4f.client import Client as G4fClient
-
-from config import BOT_TOKEN, OWNER_ID, AI_MODEL, AI_TIMEOUT
+from config import BOT_TOKEN, OWNER_ID
 import database as db
 
 logging.basicConfig(level=logging.INFO)
@@ -33,23 +31,8 @@ async def get_webapp_url() -> str:
 
 
 async def send_ai_message(text: str) -> str:
-    g4f_client = G4fClient()
-    prompt = db.get_setting("ai_prompt") or "Ты вежливый помощник. Отвечай кратко."
     owner_name = db.get_setting("owner_name") or "Владелец"
-    prompt = prompt.replace("OWNER_NAME", owner_name)
-    try:
-        response = g4f_client.chat.completions.create(
-            model=AI_MODEL,
-            messages=[
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": text},
-            ],
-            timeout=AI_TIMEOUT,
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        logger.error(f"g4f error: {e}")
-        return f"Я передам {owner_name}, как только он появится"
+    return f"Я передам {owner_name}, как только он появится"
 
 
 async def notify_owner(bot_instance, sender_name, sender_username, text, reply, is_stranger):
@@ -173,9 +156,7 @@ async def main():
                 db.delete_rule(rule_id)
                 await message.answer("✅ Правило удалено")
         elif action == "test_ai":
-            test_text = "Привет, как дела?"
-            reply = await send_ai_message(test_text)
-            await message.answer(f"🧪 Тест ИИ:\nВопрос: {test_text}\nОтвет: {reply}")
+            await message.answer("⚠️ ИИ временно недоступен. Работают правила.")
 
     @router.message(F.business_connection)
     async def handle_business_message(message: Message):
