@@ -115,6 +115,9 @@ async def main():
 
     @router.message(Command("settings"))
     async def cmd_settings(message: Message):
+        if not is_owner(message.from_user.id):
+            await message.answer("❌ У вас нет доступа к настройкам.")
+            return
         webapp_url = await get_webapp_url()
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="⚙️ Открыть настройки", web_app=WebAppInfo(url=webapp_url))]
