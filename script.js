@@ -3,7 +3,13 @@ if (tg) { tg.ready(); tg.expand(); }
 let currentSettings = {};
 let currentRules = [];
 
-document.addEventListener('DOMContentLoaded', () => { initTabs(); loadSettings(); });
+document.addEventListener('DOMContentLoaded', () => {
+    initTabs();
+    loadSettings();
+    document.getElementById('test_mode').addEventListener('change', function() {
+        document.getElementById('test_hint').style.display = this.checked ? 'block' : 'none';
+    });
+});
 
 function initTabs() {
     document.querySelectorAll('.tab').forEach(tab => {
@@ -45,6 +51,7 @@ function updateUI() {
     document.getElementById('enabled').checked = currentSettings.enabled;
     document.getElementById('notifications').checked = currentSettings.notifications;
     document.getElementById('test_mode').checked = currentSettings.test_mode;
+    document.getElementById('test_hint').style.display = currentSettings.test_mode ? 'block' : 'none';
     document.getElementById('owner_name').value = currentSettings.owner_name || '';
     document.getElementById('webapp_url').value = currentSettings.webapp_url || '';
     const modeInput = document.querySelector('input[name="reply_mode"][value="' + currentSettings.reply_mode + '"]');
